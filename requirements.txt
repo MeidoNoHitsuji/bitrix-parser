@@ -1,0 +1,4 @@
+requests
+SQLAlchemy~=1.4.31
+alembic~=1.7.6
+phpserialize~=1.3
