@@ -1,1 +1,4 @@
-print([i for i in range(1, 5)])
+from models import Tag
+
+
+print(Tag.get(Tag.id.in_([1, 2])))

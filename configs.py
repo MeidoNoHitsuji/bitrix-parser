@@ -16,6 +16,7 @@ class Teg:
     DESCRIPTION = "Описание"
     VALUE_OPTIONS = "ВариантыЗначений"
     VALUE = "Значение"
+    VALUE_OPTION = "Вариант"
     VALUE_DEFAULT = "БитриксЗначениеПоУмолчанию"
     IMAGE = "Картинка"
     PROPERTY_VALUES = "ЗначенияСвойств"
