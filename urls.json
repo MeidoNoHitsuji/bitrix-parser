@@ -1,0 +1,186 @@
+[{
+    "url": "https://www.tltsu.ru/upravlenie/educational-methodical-management/schedule/",
+    "title": "Расписание учебных занятий на 2021-2022 учебный год",
+    "type": "container",
+    "todo": ["files"]
+}, {
+    "url": "https://www.tltsu.ru/upravlenie/educational-methodical-management/the-schedule-of-educational-process/",
+    "title": "Календарные учебные графики",
+    "type": "container",
+    "todo": ["files"]
+}, {
+    "url": "https://www.tltsu.ru/uscience/scientific-library/",
+    "title": "Научная библиотека опорного Тольяттинского государственного университета",
+    "type": "uscience"
+}, {
+    "url": "https://www.tltsu.ru/trudoustroystvo-studentov-i-vypusknikov/",
+    "title": "Центр проектной деятельности ТГУ",
+    "type": "container",
+    "childs": ["Практика", "Трудоустройство"],
+    "todo": ["childs"]
+}, {
+    "url": "https://www.tltsu.ru/sveden/struct/",
+    "title": "Структура и органы управления образовательной организацией",
+    "type": "container-struct" 
+}, {
+    "url": "https://www.tltsu.ru/upravlenie/educational-methodical-management/regulatory-documents-of-educational-process/",
+    "title": "УМУ: нормативные документы учебного процесса",
+    "type": "container",
+    "todo": ["files"]
+}, {
+    "url": "https://www.tltsu.ru/upravlenie/educational-methodical-management/methodical-work/",
+    "title": "Методическая работа",
+    "type": "container",
+    "todo": ["files"]
+}, {
+    "url": "https://www.tltsu.ru/upravlenie/educational-methodical-management/development-in-opop/",
+    "title": "Разработка основной профессиональной образовательной программы высшего образования (ОПОП ВО)",
+    "type": "container",
+    "todo": ["files"]
+}, {
+    "url": "https://www.tltsu.ru/upravlenie/educational-methodical-management/development-of-training-courses-implemented-with-the-use-of-distance-learning-technologies/",
+    "title": "Разработка учебных курсов с применением дистанционных образовательных технологий",
+    "type": "container",
+    "childs": ["Нормативная документация", "Заключение договоров с авторами учебных курсов"],
+    "todo": ["childs"]
+}, {
+    "url": "https://www.tltsu.ru/upravlenie/educational-methodical-management/state-educational-standards/",
+    "title": "Федеральные государственные образовательные стандарты",
+    "type": "container",
+    "todo": ["files"]
+}, {
+    "url": "https://www.tltsu.ru/upravlenie/educational-methodical-management/the-hourly-wage/",
+    "title": "Система почасовой оплаты",
+    "type": "container",
+    "todo": ["files"]
+}, {
+    "url": "https://www.tltsu.ru/sveden/paid_edu/",
+    "title": "Платные образовательные услуги ТГУ",
+    "type": "container",
+    "todo": ["files"]
+}, {
+    "url": "https://www.tltsu.ru/uscience/",
+    "title": "Тольяттинский государственный университет: наука и инновации",
+    "type": "uscience"
+}, {
+    "url": "https://www.tltsu.ru/about_the_university/",
+    "title": "Тольяттинский государственный университет",
+    "type": "container",
+    "childs": ["Миссия и стратегическая цель"],
+    "todo": ["urls", "childs"]
+}, {
+    "url": "https://www.tltsu.ru/about_the_university/mission.php",
+    "title": "Тольяттинский государственный университет - опорный университет Самарской области",
+    "type": "container"
+}, {
+    "url": "https://www.tltsu.ru/sveden/common/",
+    "title": "Тольяттинский государственный университет: основные сведения",
+    "type": "container",
+    "todo": ["childs"]
+}, {
+    "url": "https://www.tltsu.ru/about_the_university/the-scientific-council/",
+    "title": "Учёный совет Тольяттинского государственного университета",
+    "type": "container",
+    "todo": ["docs"]
+}, {
+    "url": "https://www.tltsu.ru/about_the_university/management/",
+    "title": "Опорный ТГУ: ректорат",
+    "type": "container"
+}, {
+    "url": "https://www.tltsu.ru/about_the_university/PS/",
+    "title": "ТГУ: координационный совет",
+    "type": "container",
+    "todo": ["urls", "docs"]
+}, {
+    "url": "https://www.tltsu.ru/about_the_university/history/",
+    "title": "История Тольяттинского государственного университета",
+    "type": "container",
+    "childs_wthout": ["65 лет ТГУ", "Назад"],
+    "todo": ["childs"]
+}, {
+    "url": "https://www.tltsu.ru/about_the_university/useful_links/",
+    "title": "Достижения опорного Тольяттинского государственного университета",
+    "type": "container",
+    "todo": ["urls", "docs"]
+}, {
+    "url": "https://www.tltsu.ru/about_the_university/tsu-in-the-rankings/",
+    "title": "Позиции Тольяттинского государственного университета в международных рейтингах",
+    "type": "jumbotron",
+    "todo": ["urls", "docs"]
+}, {
+    "url": "https://www.tltsu.ru/about_the_university/transformation/prioritet-2030/",
+    "title": "Приоритет 2030: программа развития ТГУ на 2021-2030 годы",
+    "type": null
+}, {
+    "url": "https://www.tltsu.ru/about_the_university/transformation/policy.php",
+    "title": "Политика в области качества",
+    "type": "container",
+    "todo": ["urls", "docs"]
+}, {
+    "url": "https://www.tltsu.ru/upravlenie/safety/ord/",
+    "title": "Управление собственной безопасности ТГУ: приказы, регламенты, инструкции",
+    "type": "container",
+    "todo": ["urls", "docs"]
+}, {
+    "url": "https://www.tltsu.ru/about_the_university/inclusive-education/",
+    "title": "Инклюзивное образование",
+    "type": "container",
+    "todo": ["urls", "docs"]
+}, {
+    "url": "https://www.tltsu.ru/about_the_university/transformation/energy-policy.php",
+    "title": "Энергетическая политика ТГУ",
+    "type": "container",
+    "todo": ["urls", "docs"]
+}, {
+    "url": "https://www.tltsu.ru/about_the_university/antikorr/",
+    "title": "Противодействие коррупции в ТГУ",
+    "type": "container",
+    "todo": ["urls", "docs"]
+}, {
+    "url": "https://www.tltsu.ru/about_the_university/antiterror/",
+    "title": "ПРОФИЛАКТИКА ТЕРРОРИЗМА И ЭКСТРЕМИЗМА",
+    "type": "container",
+    "todo": ["urls", "docs"]
+}, {
+    "url": "https://www.tltsu.ru/upravlenie/center-for-information-policy-and-media-communications-youth-media-have-a-talk/",
+    "title": "Центр гуманитарных технологий и медиакоммуникаций",
+    "type": "container",
+    "todo": ["urls", "docs"]
+}, {
+    "url": "https://www.tltsu.ru/about_the_university/for-cm/",
+    "title": "Информация для СМИ",
+    "type": "container",
+    "todo": ["urls", "docs"]
+}, {
+    "url": "https://www.tltsu.ru/contacts/contacts/",
+    "title": "Тольяттинский государственный университет: координаты",
+    "type": "container"
+}, {
+    "url": "https://www.tltsu.ru/students/life-outside-of-school/",
+    "title": "Внеучебная жизнь ТГУ",
+    "type": "container"
+}, {
+    "url": "https://www.tltsu.ru/association/the-trade-union-committee-of-sotr/",
+    "title": "Новости профкома опорного ТГУ",
+    "type": "container"
+}, {
+    "url": "https://www.tltsu.ru/memorial/",
+    "title": "Мемориальный комплекс",
+    "type": "container"
+}, {
+    "url": "https://www.tltsu.ru/upravlenie-studentami/mat/",
+    "title": "Материальная поддержка обучающихся ТГУ",
+    "type": "container"
+}, {
+    "url": "https://www.tltsu.ru/students/schedule/open-education/",
+    "title": "ТГУ: открытое образование",
+    "type": "container"
+}, {
+    "url": "https://www.tltsu.ru/students/the-merged-dean-s-office/",
+    "title": "Объединённый деканат опорного ТГУ: график работы",
+    "type": "container"
+}, {
+    "url": "https://www.tltsu.ru/shop/the-payment.php",
+    "title": "Описание процедуры оплаты",
+    "type": "container"
+}]

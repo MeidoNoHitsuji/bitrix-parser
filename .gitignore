@@ -3,4 +3,5 @@ __pycache__
 database.db
 files
 json
+html
 *.bat

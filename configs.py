@@ -1,5 +1,6 @@
 data_path = "./data"
 json_path = "./json"
+html_path = "./html"
 
 
 class Teg:
@@ -32,3 +33,8 @@ class Property:
     PREVIEW = "CML2_PREVIEW_TEXT"
     DESCRIPTION = "CML2_DETAIL_TEXT"
     PREVIEW_IMAGE = "CML2_PREVIEW_PICTURE"
+    
+class StaticType:
+    USCIENCE = "uscience"
+    CONTAINER = "container"
+    JUMBOTRON = "jumbotron"
