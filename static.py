@@ -129,11 +129,12 @@ def load_card(tag: bs4.element.Tag, childs = None, childs_wthout = None, soup: O
         
         row = load_row(soup)
         if row is not None:
-            load_card(row, allDocs=allDocs, currentCountUrls=currentCountUrls, allCountUrls=allCountUrls)
+            currentCountUrls, allCountUrls = load_card(row, allDocs=allDocs, currentCountUrls=currentCountUrls, allCountUrls=allCountUrls)
         else:
             print(f"{url} - не найден")
     print("Все ссылки загружены.")
-        
+    
+    return currentCountUrls, allCountUrls
     # if childs is not None and soup is not None:
     #     sidebar = find_sidebar(soup)
     #     if sidebar is not None:
