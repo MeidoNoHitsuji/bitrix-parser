@@ -99,7 +99,7 @@ def load_row(tag: Union[BeautifulSoup, bs4.element.Tag], type: str = None):
             
     return row
 
-def load_card(tag: bs4.element.Tag, childs = None, childs_wthout = None, soup: Optional[BeautifulSoup] = None, allDocs: List[str] = []):
+def load_card(tag: bs4.element.Tag, childs = None, childs_wthout = None, soup: Optional[BeautifulSoup] = None, allDocs: List[str] = [], allCountUrls = 0, currentCountUrls = 0):
     save_card(tag)
     
     docs = find_docs(tag)
@@ -108,28 +108,28 @@ def load_card(tag: bs4.element.Tag, childs = None, childs_wthout = None, soup: O
     
     urls = find_urls(tag)
     print(f"Найдено {len(urls)} ссылок")
+    allCountUrls += len(urls)
     
-    i = 0
     for url in urls:
-        i += 1
+        currentCountUrls += 1
         if url in allUrls:
-            print(f"Ссылка номер {i} пропущена.")
+            print(f"Ссылка {currentCountUrls}/{allCountUrls} пропущена.")
             continue
         else:
-            print(f"Загружаю ссылку номер {i}.")
+            print(f"Загружаю ссылку {currentCountUrls}/{allCountUrls}.")
             
         try:
             resp = requests.get(url)
             soup = BeautifulSoup(resp.text, 'lxml')
             allUrls.append(url)
         except:
-            print(f"Ссылка номер {i} выдала ошибку.")
+            print(f"Ссылка {currentCountUrls}/{allCountUrls} выдала ошибку.")
             errorUrls.append(url)
             continue
         
         row = load_row(soup)
         if row is not None:
-            load_card(row, allDocs=allDocs)
+            load_card(row, allDocs=allDocs, currentCountUrls=currentCountUrls, allCountUrls=allCountUrls)
         else:
             print(f"{url} - не найден")
     print("Все ссылки загружены.")
