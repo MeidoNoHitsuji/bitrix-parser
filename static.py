@@ -26,12 +26,12 @@ def find_urls(tag: bs4.element.Tag):
             _href = _href.strip("/")
             _href = f"https://www.tltsu.ru/{_href}"
             
-        if not href.lower().endswith((".pdf", ".docs", ".doc", ".pptx", ".xlsx", ".rar", ".png", ".jpeg")):
+        if not href.lower().endswith((".pdf", ".docs", ".docx", ".doc", ".pptx", ".xlsx", ".rar", ".zip", ".png", ".jpeg", ".xls", ".rtf")):
             urls.append(_href)
             
     return urls
 
-def find_docs(tag: bs4.element.Tag):
+def find_docs(tag: Optional[bs4.element.Tag] = None):
     docs = list()
     for item in tag.find_all("a"):
         item: bs4.element.Tag = item
@@ -46,8 +46,8 @@ def find_docs(tag: bs4.element.Tag):
             _href = _href.strip("/")
             _href = f"https://www.tltsu.ru/{_href}"
             
-        if href.lower().endswith((".pdf", ".docs", ".doc", ".pptx", ".xlsx", ".rar", ".png", ".jpeg")):
-            docs.append(urls)
+        if href.lower().endswith((".pdf", ".docs", ".docx", ".doc", ".pptx", ".xlsx", ".rar", ".zip", ".png", ".jpeg", ".xls", ".rtf")):
+            docs.append(_href)
             
     return docs
 
@@ -94,12 +94,12 @@ def load_row(tag: Union[BeautifulSoup, bs4.element.Tag], type: str = None):
             row = None
     else:
         row = find_container_row(tag)
-        if row in None:
+        if row is None:
             row = find_jumbotron_row(tag)
             
     return row
 
-def load_card(tag: bs4.element.Tag, childs = None, childs_wthout = None, soup: Optional[BeautifulSoup] = None):
+def load_card(tag: bs4.element.Tag, childs = None, childs_wthout = None, soup: Optional[BeautifulSoup] = None, allDocs: List[str] = []):
     save_card(tag)
     
     docs = find_docs(tag)
@@ -117,11 +117,21 @@ def load_card(tag: bs4.element.Tag, childs = None, childs_wthout = None, soup: O
             continue
         else:
             print(f"Загружаю ссылку номер {i}.")
+            
+        try:
+            resp = requests.get(url)
+            soup = BeautifulSoup(resp.text, 'lxml')
             allUrls.append(url)
-        resp = requests.get(url)
-        soup = BeautifulSoup(resp.text, 'lxml')
+        except:
+            print(f"Ссылка номер {i} выдала ошибку.")
+            errorUrls.append(url)
+            continue
+        
         row = load_row(soup)
-        load_card(row)
+        if row is not None:
+            load_card(row, allDocs=allDocs)
+        else:
+            print(f"{url} - не найден")
     print("Все ссылки загружены.")
         
     # if childs is not None and soup is not None:
@@ -177,12 +187,13 @@ def save_html(row: bs4.element.Tag, title: str):
 if __name__ == "__main__":
     allDocs: List[str] = list()
     allUrls: List[str] = list()
+    errorUrls: List[str] = list()
 
     f = open("./urls.json", "r", encoding="utf_8")
     urls: List[dict] = json.loads(f.read())
 
     for data in urls:
-        allUrls += data['url']
+        allUrls += [data['url']]
 
     for data in urls:
         url: str = data['url']
@@ -196,18 +207,33 @@ if __name__ == "__main__":
         else:
             childs = None
             childs_wthout = None
-
-        resp = requests.get(url)
-        soup = BeautifulSoup(resp.text, 'lxml')
-
+        try:
+            resp = requests.get(url)
+            soup = BeautifulSoup(resp.text, 'lxml')
+        except:
+            allUrls.remove(url)
+            errorUrls.append(url)
+            continue   
+            
         if type == StaticType.USCIENCE:
             pass
         else:
             row = load_row(soup, type)
 
-        if row:
+        if row is not None:
             print(f"{url} - Начало загрузки")
-            load_card(row, childs=childs, childs_wthout=childs_wthout, soup=soup)
+            load_card(row, childs=childs, childs_wthout=childs_wthout, soup=soup, allDocs=allDocs)
+        else:
+            print(f"{url} - не найден")
+    
+    allDocs = list(set(allDocs))
+    print(f"Кол-во доков: {len(allDocs)}")
+    
+    allUrls = list(set(allUrls))
+    print(f"Кол-во ссылок: {len(allUrls)}")
+    
+    errorUrls = list(set(errorUrls))
+    print(f"Кол-во сломанных ссылок: {len(errorUrls)}")
             
     f = open(f"{configs.html_path}/docs.json", "w", encoding='utf8')
     f.write(str(allDocs))
@@ -215,5 +241,9 @@ if __name__ == "__main__":
 
     f = open(f"{configs.html_path}/urls.json", "w", encoding='utf8')
     f.write(str(allUrls))
+    f.close()
+    
+    f = open(f"{configs.html_path}/error_urls.json", "w", encoding='utf8')
+    f.write(str(errorUrls))
     f.close()
     

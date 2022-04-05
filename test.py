@@ -1,4 +1,10 @@
-from models import Tag
+def test(a):
+    a += ['123']
+    
+b = []
+test(b)
+print(b)
 
+b.remove('123')
 
-print(Tag.get(Tag.id.in_([1, 2])))
+print(b)
