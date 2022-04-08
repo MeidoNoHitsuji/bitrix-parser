@@ -26,6 +26,8 @@ def find_urls(tag: bs4.element.Tag, parent_uuid: str):
         if href.startswith(('http://', 'https://')):
             if "www.tltsu.ru" not in href or "tltsu.ru" not in href:
                 continue
+        elif "/news-archive/" in href:
+            continue
         else:
             _href = _href.strip("/")
             _href = f"https://www.tltsu.ru/{_href}"
