@@ -4,13 +4,41 @@ import os
 import re
 import configs
 from configs import StaticType
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 import requests
 import bs4
+import uuid
 from bs4 import BeautifulSoup
 
-def find_urls(tag: bs4.element.Tag):
-    urls = list()
+def find_urls(tag: bs4.element.Tag, parent_uuid: str):
+    urls = dict()
+    for item in tag.find_all("a"):
+        item: bs4.element.Tag = item
+        href = item.attrs.get('href')
+        if href is None:
+            continue
+        _href = copy(href)
+        href = href.lower()
+        
+        if "mailto:" in href:
+            continue
+        
+        if href.startswith(('http://', 'https://')):
+            if "www.tltsu.ru" not in href or "tltsu.ru" not in href:
+                continue
+        else:
+            _href = _href.strip("/")
+            _href = f"https://www.tltsu.ru/{_href}"
+            
+        if not href.lower().endswith((".pdf", ".docs", ".docx", ".doc", ".pptx", ".xlsx", ".rar", ".zip", ".png", ".jpeg", ".jpg", ".xls", ".rtf", ".sig")):
+            urls[_href] = {
+                "parent": parent_uuid
+            }
+            
+    return urls
+
+def find_docs(tag: Optional[bs4.element.Tag] = None):
+    docs = list()
     for item in tag.find_all("a"):
         item: bs4.element.Tag = item
         href = item.attrs.get('href')
@@ -26,27 +54,7 @@ def find_urls(tag: bs4.element.Tag):
             _href = _href.strip("/")
             _href = f"https://www.tltsu.ru/{_href}"
             
-        if not href.lower().endswith((".pdf", ".docs", ".docx", ".doc", ".pptx", ".xlsx", ".rar", ".zip", ".png", ".jpeg", ".xls", ".rtf")):
-            urls.append(_href)
-            
-    return urls
-
-def find_docs(tag: Optional[bs4.element.Tag] = None):
-    docs = list()
-    for item in tag.find_all("a"):
-        item: bs4.element.Tag = item
-        href = item.attrs.get('href')
-        _href = copy(href)
-        href = href.lower()
-        
-        if href.startswith(('http://', 'https://')):
-            if "www.tltsu.ru" not in href or "tltsu.ru" not in href:
-                continue
-        else:
-            _href = _href.strip("/")
-            _href = f"https://www.tltsu.ru/{_href}"
-            
-        if href.lower().endswith((".pdf", ".docs", ".docx", ".doc", ".pptx", ".xlsx", ".rar", ".zip", ".png", ".jpeg", ".xls", ".rtf")):
+        if href.lower().endswith((".pdf", ".docs", ".docx", ".doc", ".pptx", ".xlsx", ".rar", ".zip", ".png", ".jpeg", ".jpg", ".xls", ".rtf", ".sig")):
             docs.append(_href)
             
     return docs
@@ -87,9 +95,9 @@ def get_url_childs(tag: bs4.element.Tag, names: List[str] = [], without: List[st
 def load_row(tag: Union[BeautifulSoup, bs4.element.Tag], type: str = None):
     if type is not None:
         if type == StaticType.CONTAINER:
-            row = find_container_row(soup)
+            row = find_container_row(tag)
         elif type == StaticType.JUMBOTRON:
-            row = find_jumbotron_row(soup)
+            row = find_jumbotron_row(tag)
         else:
             row = None
     else:
@@ -99,42 +107,54 @@ def load_row(tag: Union[BeautifulSoup, bs4.element.Tag], type: str = None):
             
     return row
 
-def load_card(tag: bs4.element.Tag, childs = None, childs_wthout = None, soup: Optional[BeautifulSoup] = None, allDocs: List[str] = [], allCountUrls = 0, currentCountUrls = 0):
-    save_card(tag)
+def load_card(url: str, data = None, childs = None, childs_wthout = None, allUrls: Dict = dict()):
     
-    docs = find_docs(tag)
-    print(f"Найдено {len(docs)} документов")
-    allDocs += docs
+    if url in allUrls.keys():
+        return None, None
+
+    current_uuid = str(uuid.uuid4())
+
+    try:
+        blocks = url.split("/")
     
-    urls = find_urls(tag)
-    print(f"Найдено {len(urls)} ссылок")
-    allCountUrls += len(urls)
+        if len(blocks) > 1:
+            if len(blocks[-1]) == 0:
+                b = blocks[-2]
+            else:
+                b = blocks[-1]
     
-    for url in urls:
-        currentCountUrls += 1
-        if url in allUrls:
-            print(f"Ссылка {currentCountUrls}/{allCountUrls} пропущена.")
-            continue
-        else:
-            print(f"Загружаю ссылку {currentCountUrls}/{allCountUrls}.")
+            if b[0] == "#":
+                return None, None
+        
+        if url not in allUrls:
+            allUrls[url] = data
             
-        try:
-            resp = requests.get(url)
-            soup = BeautifulSoup(resp.text, 'lxml')
-            allUrls.append(url)
-        except:
-            print(f"Ссылка {currentCountUrls}/{allCountUrls} выдала ошибку.")
-            errorUrls.append(url)
-            continue
+        allUrls[url]["current"] = current_uuid
+        
+        resp = requests.get(url)
+        soup = BeautifulSoup(resp.text, 'lxml')
         
         row = load_row(soup)
-        if row is not None:
-            currentCountUrls, allCountUrls = load_card(row, allDocs=allDocs, currentCountUrls=currentCountUrls, allCountUrls=allCountUrls)
-        else:
+        
+        if row is None:
             print(f"{url} - не найден")
-    print("Все ссылки загружены.")
+            return None, None
+        else:
+            print(f"Загружаю ссылку {url}.")
+    except:
+        print(f"Ссылка {url} выдала ошибку.")
+        errorUrls.append(url)
+        return None, None
     
-    return currentCountUrls, allCountUrls
+    save_card(row)
+    
+    docs = find_docs(row)
+    print(f"Найдено {len(docs)} документов")
+    
+    urls = find_urls(row, current_uuid)
+    print(f"Найдено {len(urls)} ссылок")
+    
+    return docs, urls
     # if childs is not None and soup is not None:
     #     sidebar = find_sidebar(soup)
     #     if sidebar is not None:
@@ -187,50 +207,72 @@ def save_html(row: bs4.element.Tag, title: str):
 
 if __name__ == "__main__":
     allDocs: List[str] = list()
-    allUrls: List[str] = list()
+    allUrls: Dict = dict()
     errorUrls: List[str] = list()
 
     f = open("./urls.json", "r", encoding="utf_8")
     urls: List[dict] = json.loads(f.read())
 
+    needLoad = dict()
+    
     for data in urls:
-        allUrls += [data['url']]
-
-    for data in urls:
-        url: str = data['url']
-        title: str = data['title']
-        type: str = data['type']
-        parameters: Optional[List[str]] = data.get('parameters')
-        
-        if parameters and 'childs' in parameters:
-            childs = data.get('childs', [])
-            childs_wthout = data.get('childs_wthout', [])
-        else:
-            childs = None
-            childs_wthout = None
-        try:
-            resp = requests.get(url)
-            soup = BeautifulSoup(resp.text, 'lxml')
-        except:
-            allUrls.remove(url)
-            errorUrls.append(url)
-            continue   
+        needLoad[data['url']] = {
+            "parent": None
+        }
+    
+    while len(needLoad) != 0:
+        _needLoad = copy(needLoad)
+        for url, d in needLoad.items():
+            docs, _urls = load_card(url, d, allUrls=allUrls)
+            del _needLoad[url]
             
-        if type == StaticType.USCIENCE:
-            pass
-        else:
-            row = load_row(soup, type)
+            if _urls is not None:
+                keys = list(filter(lambda u: u not in allUrls, _urls.keys()))
+                _needLoad.update(
+                    {k: _urls[k] for k in keys}
+                )
+            elif url in allUrls:
+                del allUrls[url]
+            
+            if docs is not None:
+                allDocs += docs
+        print(f"Кол-во необходимых для закрузки страниц: {len(_needLoad)}")
+        needLoad = _needLoad
+    # for data in urls:
+    #     url: str = data['url']
+    #     title: str = data['title']
+    #     type: str = data['type']
+    #     parameters: Optional[List[str]] = data.get('parameters')
+        
+    #     if parameters and 'childs' in parameters:
+    #         childs = data.get('childs', [])
+    #         childs_wthout = data.get('childs_wthout', [])
+    #     else:
+    #         childs = None
+    #         childs_wthout = None
+    #     try:
+    #         resp = requests.get(url)
+    #         soup = BeautifulSoup(resp.text, 'lxml')
+    #     except:
+    #         allUrls.remove(url)
+    #         errorUrls.append(url)
+    #         continue   
+            
+    #     if type == StaticType.USCIENCE:
+    #         pass
+    #     else:
+    #         row = load_row(soup, type)
 
-        if row is not None:
-            print(f"{url} - Начало загрузки")
-            load_card(row, childs=childs, childs_wthout=childs_wthout, soup=soup, allDocs=allDocs)
-        else:
-            print(f"{url} - не найден")
+    #     if row is not None:
+    #         print(f"{url} - Начало загрузки")
+    #         load_card(row, childs=childs, childs_wthout=childs_wthout, soup=soup, allDocs=allDocs)
+    #     else:
+    #         print(f"{url} - не найден")
     
     allDocs = list(set(allDocs))
     print(f"Кол-во доков: {len(allDocs)}")
     
-    allUrls = list(set(allUrls))
+    # allUrls = list(set(allUrls))
     print(f"Кол-во ссылок: {len(allUrls)}")
     
     errorUrls = list(set(errorUrls))

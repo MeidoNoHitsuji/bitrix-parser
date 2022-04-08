@@ -1,10 +1,6 @@
-def test(a):
-    a += ['123']
-    
-b = []
-test(b)
-print(b)
+a =  {
+    "asda": 123
+}
 
-b.remove('123')
-
-print(b)
+for k, v in a.items():
+    print(k, v)
