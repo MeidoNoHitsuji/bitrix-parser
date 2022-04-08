@@ -124,6 +124,7 @@ def load_card(url: str, data = None, childs = None, childs_wthout = None, allUrl
                 b = blocks[-1]
     
             if b[0] == "#":
+                sharpUrls.append(url)
                 return None, None
         
         if url not in allUrls:
@@ -138,6 +139,7 @@ def load_card(url: str, data = None, childs = None, childs_wthout = None, allUrl
         
         if row is None:
             print(f"{url} - не найден")
+            notFoundUrls.append(url)
             return None, None
         else:
             print(f"Загружаю ссылку {url}.")
@@ -209,6 +211,8 @@ if __name__ == "__main__":
     allDocs: List[str] = list()
     allUrls: Dict = dict()
     errorUrls: List[str] = list()
+    notFoundUrls: List[str] = list()
+    sharpUrls: List[str] = list()
 
     f = open("./urls.json", "r", encoding="utf_8")
     urls: List[dict] = json.loads(f.read())
@@ -277,6 +281,12 @@ if __name__ == "__main__":
     
     errorUrls = list(set(errorUrls))
     print(f"Кол-во сломанных ссылок: {len(errorUrls)}")
+    
+    notFoundUrls = list(set(notFoundUrls))
+    print(f"Кол-во не найденных ссылок: {len(notFoundUrls)}")
+    
+    sharpUrls = list(set(sharpUrls))
+    print(f"Кол-во пропущенных ссылок с параметром: {len(sharpUrls)}")
             
     f = open(f"{configs.html_path}/docs.json", "w", encoding='utf8')
     f.write(str(allDocs))
@@ -288,5 +298,13 @@ if __name__ == "__main__":
     
     f = open(f"{configs.html_path}/error_urls.json", "w", encoding='utf8')
     f.write(str(errorUrls))
+    f.close()
+    
+    f = open(f"{configs.html_path}/not_found_urls.json", "w", encoding='utf8')
+    f.write(str(notFoundUrls))
+    f.close()
+    
+    f = open(f"{configs.html_path}/sharp_urls.json", "w", encoding='utf8')
+    f.write(str(sharpUrls))
     f.close()
     
