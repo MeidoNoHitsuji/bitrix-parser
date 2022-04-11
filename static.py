@@ -52,6 +52,8 @@ def find_docs(tag: Optional[bs4.element.Tag] = None):
         if href.startswith(('http://', 'https://')):
             if "www.tltsu.ru" not in href or "tltsu.ru" not in href:
                 continue
+        elif "/news-archive/" in href or "/about_the_university/news" in href or "media-tsu/videogallery/" in href or "?PAGEN_1=" in href:
+            continue
         else:
             _href = _href.strip("/")
             _href = f"https://www.tltsu.ru/{_href}"
