@@ -9,10 +9,6 @@
     "type": "container",
     "parameters": ["files"]
 }, {
-    "url": "https://www.tltsu.ru/uscience/scientific-library/",
-    "title": "Научная библиотека опорного Тольяттинского государственного университета",
-    "type": "uscience"
-}, {
     "url": "https://www.tltsu.ru/trudoustroystvo-studentov-i-vypusknikov/",
     "title": "Центр проектной деятельности ТГУ",
     "type": "container",
@@ -21,7 +17,7 @@
 }, {
     "url": "https://www.tltsu.ru/sveden/struct/",
     "title": "Структура и органы управления образовательной организацией",
-    "type": "container-struct" 
+    "type": "container" 
 }, {
     "url": "https://www.tltsu.ru/upravlenie/educational-methodical-management/regulatory-documents-of-educational-process/",
     "title": "УМУ: нормативные документы учебного процесса",
@@ -59,10 +55,6 @@
     "type": "container",
     "parameters": ["files"]
 }, {
-    "url": "https://www.tltsu.ru/uscience/",
-    "title": "Тольяттинский государственный университет: наука и инновации",
-    "type": "uscience"
-}, {
     "url": "https://www.tltsu.ru/about_the_university/",
     "title": "Тольяттинский государственный университет",
     "type": "container",
@@ -95,7 +87,7 @@
     "url": "https://www.tltsu.ru/about_the_university/history/",
     "title": "История Тольяттинского государственного университета",
     "type": "container",
-    "childs_wthout": ["65 лет ТГУ", "Назад"],
+    "childs_without": ["65 лет ТГУ", "Назад"],
     "parameters": ["childs"]
 }, {
     "url": "https://www.tltsu.ru/about_the_university/useful_links/",
@@ -165,7 +157,7 @@
     "url": "https://www.tltsu.ru/memorial/",
     "title": "Мемориальный комплекс",
     "type": "container",
-    "childs_wthout": ["Главная"],
+    "childs_without": ["Главная"],
     "parameters": ["urls", "files", "childs"]
 }, {
     "url": "https://www.tltsu.ru/upravlenie-studentami/mat/",

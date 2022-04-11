@@ -2,16 +2,25 @@ from copy import copy
 import json
 import os
 import re
+import uuid
 import configs
 from configs import StaticType
 from typing import Dict, List, Optional, Union
 import requests
 import bs4
-import uuid
 from bs4 import BeautifulSoup
+from slugify import slugify
 
-def find_urls(tag: bs4.element.Tag, parent_uuid: str):
-    urls = dict()
+skip_list = ["/news-archive/", "/about_the_university/news", "upravlenie/educational-methodical-management/schedule",
+    "media-tsu/videogallery/", "?pagen_1=", "uscience/certification", "uscience/equipment"
+    "/uscience/scientific-library/news", "/uscience/scientific-library/question-ans", "uscience/lab",
+    "uscience/scientific-innovative-activity/patents", "uscience/scientific-innovative-activity/computer-programs",
+    "uscience/scientific-innovative-activity/trademarks"]
+
+doc_mask = (".pdf", ".docs", ".docx", ".doc", ".pptx", ".xlsx", ".rar", ".zip", ".png", ".jpeg", ".jpg", ".xls", ".rtf", ".sig")
+
+def find_urls(tag: bs4.element.Tag):
+    urls = list()
     for item in tag.find_all("a"):
         item: bs4.element.Tag = item
         href = item.attrs.get('href')
@@ -26,16 +35,28 @@ def find_urls(tag: bs4.element.Tag, parent_uuid: str):
         if href.startswith(('http://', 'https://')):
             if "www.tltsu.ru" not in href or "tltsu.ru" not in href:
                 continue
-        elif "/news-archive/" in href:
+        elif any([s in href for s in skip_list]):
             continue
+        elif "uscience/services" in href:
+            href_list = href.replace("https://", '')\
+                            .replace("http://", '')\
+                            .replace("www.tltsu.ru/", '')\
+                            .replace("tltsu.ru/", '')\
+                            .replace("uscience/services/", '')\
+                            .replace("uscience/services", '')\
+                            .strip("/")\
+                            .split("/")
+            try:
+                int(href_list[0])
+                continue
+            except:
+                _href = f"https://www.tltsu.ru/{_href}"
         else:
             _href = _href.strip("/")
             _href = f"https://www.tltsu.ru/{_href}"
             
-        if not href.lower().endswith((".pdf", ".docs", ".docx", ".doc", ".pptx", ".xlsx", ".rar", ".zip", ".png", ".jpeg", ".jpg", ".xls", ".rtf", ".sig")):
-            urls[_href] = {
-                "parent": parent_uuid
-            }
+        if not href.lower().endswith(doc_mask):
+            urls.append(_href)
             
     return urls
 
@@ -49,22 +70,27 @@ def find_docs(tag: Optional[bs4.element.Tag] = None):
         _href = copy(href)
         href = href.lower()
         
+        if "mailto:" in href:
+            continue
+        
         if href.startswith(('http://', 'https://')):
             if "www.tltsu.ru" not in href or "tltsu.ru" not in href:
                 continue
-        elif "/news-archive/" in href or "/about_the_university/news" in href or "media-tsu/videogallery/" in href or "?PAGEN_1=" in href:
+        elif any([s in href for s in skip_list]):
             continue
         else:
             _href = _href.strip("/")
             _href = f"https://www.tltsu.ru/{_href}"
             
-        if href.lower().endswith((".pdf", ".docs", ".docx", ".doc", ".pptx", ".xlsx", ".rar", ".zip", ".png", ".jpeg", ".jpg", ".xls", ".rtf", ".sig")):
+        if href.lower().endswith(doc_mask):
             docs.append(_href)
             
     return docs
 
-def save_card(tag: bs4.element.Tag):
-    pass
+def save_card(tag: bs4.element.Tag, uuid: str):
+    f = open(f"{configs.html_path}/pages/{uuid}.html", "w", encoding='utf8')
+    f.write(str(tag))
+    f.close()
 
 def get_url_childs(tag: bs4.element.Tag, names: List[str] = [], without: List[str] = []):
     urls = list()
@@ -89,10 +115,38 @@ def get_url_childs(tag: bs4.element.Tag, names: List[str] = [], without: List[st
                 continue
                        
         href = item.attrs.get('href')
-        if href:
-            urls.append(href)
+        if href is None:
+            continue
+        _href = copy(href)
+        href = href.lower()
+        
+        if "mailto:" in href:
+            continue
+        
+        if href.startswith(('http://', 'https://')):
+            if "www.tltsu.ru" not in href or "tltsu.ru" not in href:
+                continue
+        elif any([s in href for s in skip_list]):
+            continue
+        elif "uscience/services" in href:
+            href_list = href.replace("https://", '')\
+                            .replace("http://", '')\
+                            .replace("www.tltsu.ru/", '')\
+                            .replace("tltsu.ru/", '')\
+                            .replace("uscience/services/", '')\
+                            .replace("uscience/services", '')\
+                            .split("/")
+            try:
+                int(href_list[0])
+                continue
+            except:
+                pass
         else:
-            print('href not found!')
+            _href = _href.strip("/")
+            _href = f"https://www.tltsu.ru/{_href}"
+            
+        if not href.lower().endswith(doc_mask):
+            urls.append(_href)
             
     return urls
 
@@ -102,82 +156,137 @@ def load_row(tag: Union[BeautifulSoup, bs4.element.Tag], type: str = None):
             row = find_container_row(tag)
         elif type == StaticType.JUMBOTRON:
             row = find_jumbotron_row(tag)
+        elif type == StaticType.USCIENCE:
+            row, type = find_uscience_row(tag)
         else:
             row = None
     else:
         row = find_container_row(tag)
+        type = StaticType.CONTAINER
         if row is None:
             row = find_jumbotron_row(tag)
-            
-    return row
-
-def load_card(url: str, data = None, childs = None, childs_wthout = None, allUrls: Dict = dict()):
-    
-    if url in allUrls.keys():
-        return None, None
-
-    current_uuid = str(uuid.uuid4())
-
-    try:
-        blocks = url.split("/")
-    
-        if len(blocks) > 1:
-            if len(blocks[-1]) == 0:
-                b = blocks[-2]
-            else:
-                b = blocks[-1]
-    
-            if b[0] == "#":
-                sharpUrls.append(url)
-                return None, None
-        
-        if url not in allUrls:
-            allUrls[url] = data
-            
-        allUrls[url]["current"] = current_uuid
-        
-        resp = requests.get(url)
-        soup = BeautifulSoup(resp.text, 'lxml')
-        
-        row = load_row(soup)
-        
+            type = StaticType.JUMBOTRON
         if row is None:
-            print(f"{url} - не найден")
-            notFoundUrls.append(url)
-            return None, None
-        else:
-            print(f"Загружаю ссылку {url}.")
-    except:
-        print(f"Ссылка {url} выдала ошибку.")
-        errorUrls.append(url)
-        return None, None
+            row, type = find_uscience_row(tag)
+        if row is None:
+            type = None
+            
+    return row, type
+
+def add_child(parent: str, child: str):
+    for u, data in allUrls.items():
+        if data['current'] == parent:
+            if "childs" not in allUrls[u]:
+                allUrls[u]["childs"] = list()
+            allUrls[u]["childs"].append(child)
+
+def load_card(tag: bs4.element.Tag, childs = None, childs_without = None, tag_soup: Optional[BeautifulSoup] = None, allDocs: List[str] = [], allCountUrls = 0, currentCountUrls = 0, current_uuid = None, type = None):
+    save_card(tag, current_uuid)
     
-    save_card(row)
-    
-    docs = find_docs(row)
+    docs: List[str] = find_docs(tag)
     print(f"Найдено {len(docs)} документов")
+    allDocs += docs
     
-    urls = find_urls(row, current_uuid)
+    urls: List[str] = find_urls(tag)
     print(f"Найдено {len(urls)} ссылок")
+    allCountUrls += len(urls)
     
-    return docs, urls
-    # if childs is not None and soup is not None:
-    #     sidebar = find_sidebar(soup)
-    #     if sidebar is not None:
-    #         urls = get_url_childs(sidebar, childs, childs_wthout)
-    #         for url in urls:
-    #             if url in allUrls:
-    #                 continue
-    #             else:
-    #                 allUrls.append(url)
-    #             resp = requests.get(url)
-    #             soup = BeautifulSoup(resp.text, 'lxml')
-    #             row = load_row(soup)
-    #             load_card(row)
-    #     else:
-    #         print('sidebar not found!')
+    for url in urls:
+        currentCountUrls += 1
+        if url in allUrls or url in errorUrls:
+            print(f"Ссылка {currentCountUrls}/{allCountUrls} пропущена.")
+            continue
+            
+        try:
+            blocks = url.split("/")
+    
+            if len(blocks) > 1:
+                if len(blocks[-1]) == 0:
+                    b = blocks[-2]
+                else:
+                    b = blocks[-1]
         
-def find_sidebar(soup: BeautifulSoup):
+                if b[0] == "#":
+                    sharpUrls.append(url)
+                    continue
+                
+            resp = requests.get(url)
+            soup = BeautifulSoup(resp.text, 'lxml')
+            row, _type = load_row(soup)
+            allUrls[url] = {
+                "parent": current_uuid,
+                "current": str(uuid.uuid4()),
+                "title": get_title(soup),
+                "slug": None,
+                "type": _type
+            }
+            
+            if allUrls[url]['title'] is not None:
+                allUrls[url]['slug'] = slugify(allUrls[url]['title'], separator="_")
+        except:
+            print(f"Ссылка {currentCountUrls}/{allCountUrls} выдала ошибку.")
+            errorUrls.append(url)
+            continue
+        
+        if row is not None:
+            print(f"Загружаю ссылку {currentCountUrls}/{allCountUrls}.")
+            currentCountUrls, allCountUrls = load_card(row, allDocs=allDocs, currentCountUrls=currentCountUrls, allCountUrls=allCountUrls, current_uuid=allUrls[url]['current'], type=_type)
+        else:
+            notFoundUrls.append(url)
+            del allUrls[url]
+            print(f"{url} - не найден")
+    print("Все ссылки загружены.")
+    
+    if (childs is not None and tag_soup is not None) or \
+        type is not None and type == StaticType.USCIENCE:
+            
+        sidebar = find_sidebar(tag_soup, type)
+        if sidebar is not None:
+            urls = get_url_childs(sidebar, childs, childs_without)
+            for url in urls:
+                if url in allUrls:
+                    allUrls[url]["parent"] = current_uuid
+                    add_child(current_uuid, allUrls[url]['current'])
+                    continue
+                
+                if url in errorUrls:
+                    continue
+                
+                resp = requests.get(url)
+                soup = BeautifulSoup(resp.text, 'lxml')
+                row, type = load_row(soup)
+                allUrls[url] = {
+                    "parent": current_uuid,
+                    "current": str(uuid.uuid4()),
+                    "title": get_title(soup),
+                    "slug": None
+                }
+                if allUrls[url]['title'] is not None:
+                    allUrls[url]['slug'] = slugify(allUrls[url]['title'], separator="_")   
+                        
+                add_child(current_uuid, allUrls[url]['current'])
+                
+                if row is not None:
+                    currentCountUrls, allCountUrls = load_card(row, allDocs=allDocs, currentCountUrls=currentCountUrls, allCountUrls=allCountUrls, current_uuid=allUrls[url]['current'])
+                else:
+                    notFoundUrls.append(url)
+                    del allUrls[url]
+                    print(f"{url} - не найден")
+    
+    return currentCountUrls, allCountUrls
+
+def get_title(soup: BeautifulSoup):
+    head = soup.find("head")
+    if head is not None:
+        title = head.find("title")
+        if title is not None:
+            return title.text
+    return None
+        
+def find_sidebar(soup: BeautifulSoup, type = None):
+    if type in [StaticType.USCIENCE]:
+        pass
+    
     for t in soup.find_all("div", attrs = {"class": "container"}):
         for row in t.find_all("div", attrs = {"class": "row"}):
             for col in row.find_all("div", attrs = {"class": "col-lg-4"}):
@@ -196,6 +305,19 @@ def find_container_row(soup: BeautifulSoup) -> Optional[bs4.element.Tag]:
                     return _col   
     return None
 
+def find_uscience_row(soup: BeautifulSoup) -> Optional[bs4.element.Tag]:
+    for t in soup.find_all("div", attrs = {"class": "white-box"}):
+        content = t.find("div", attrs = {"class": "content"})
+        if content is not None:
+            return content, StaticType.USCIENCE
+    
+    for t in soup.find_all("div", attrs = {"class": "content"}):
+        content = t.find("div", attrs = {"class": "content"})
+        if content is not None:
+            row = content.find("div", attrs = {"class": "row"})
+        
+    return None, None
+
 def find_jumbotron_row(soup: BeautifulSoup) -> Optional[bs4.element.Tag]:
     for t in soup.find_all("div", attrs = {"class": "jumbotron"}):
         for row in t.find_all("div", attrs = {"class": "row"}):
@@ -205,11 +327,6 @@ def find_jumbotron_row(soup: BeautifulSoup) -> Optional[bs4.element.Tag]:
                     s.extract()
                 return _col   
     return None
-
-def save_html(row: bs4.element.Tag, title: str):
-    f = open(f"{configs.html_path}/{title}.html", "w", encoding='utf8')
-    f.write(str(row))
-    f.close()
 
 if __name__ == "__main__":
     allDocs: List[str] = list()
@@ -221,66 +338,88 @@ if __name__ == "__main__":
     f = open("./urls.json", "r", encoding="utf_8")
     urls: List[dict] = json.loads(f.read())
 
-    needLoad = dict()
-    
-    for data in urls:
-        needLoad[data['url']] = {
-            "parent": None
+    for data in urls:            
+        allUrls[data['url']] = {
+            "current": str(uuid.uuid4()),
+            "parent": None,
+            "title": data['title'],
+            "slug": slugify(data['title'], separator="_") if data['title'] is not None else None,
+            "type": data['type']
         }
-    
-    while len(needLoad) != 0:
-        _needLoad = copy(needLoad)
-        for url, d in needLoad.items():
-            docs, _urls = load_card(url, d, allUrls=allUrls)
-            del _needLoad[url]
-            
-            if _urls is not None:
-                keys = list(filter(lambda u: u not in allUrls, _urls.keys()))
-                _needLoad.update(
-                    {k: _urls[k] for k in keys}
-                )
-            elif url in allUrls:
-                del allUrls[url]
-            
-            if docs is not None:
-                allDocs += docs
-        print(f"Кол-во необходимых для закрузки страниц: {len(_needLoad)}")
-        needLoad = _needLoad
-    # for data in urls:
-    #     url: str = data['url']
-    #     title: str = data['title']
-    #     type: str = data['type']
-    #     parameters: Optional[List[str]] = data.get('parameters')
-        
-    #     if parameters and 'childs' in parameters:
-    #         childs = data.get('childs', [])
-    #         childs_wthout = data.get('childs_wthout', [])
-    #     else:
-    #         childs = None
-    #         childs_wthout = None
-    #     try:
-    #         resp = requests.get(url)
-    #         soup = BeautifulSoup(resp.text, 'lxml')
-    #     except:
-    #         allUrls.remove(url)
-    #         errorUrls.append(url)
-    #         continue   
-            
-    #     if type == StaticType.USCIENCE:
-    #         pass
-    #     else:
-    #         row = load_row(soup, type)
 
-    #     if row is not None:
-    #         print(f"{url} - Начало загрузки")
-    #         load_card(row, childs=childs, childs_wthout=childs_wthout, soup=soup, allDocs=allDocs)
-    #     else:
-    #         print(f"{url} - не найден")
+    for data in urls:
+        url: str = data['url']
+        type: str = data['type']
+        parameters: Optional[List[str]] = data.get('parameters')
+        
+        if parameters and 'childs' in parameters:
+            childs = data.get('childs', [])
+            childs_without = data.get('childs_without', [])
+        else:
+            childs = None
+            childs_without = None
+            
+        try:
+            resp = requests.get(url)
+            soup = BeautifulSoup(resp.text, 'lxml')
+        except:
+            del allUrls[url]
+            errorUrls.append(url)
+            continue   
+            
+        row, type = load_row(soup, type)
+
+        if row is not None and type is not None:
+            print(f"{url} - Начало загрузки")
+            load_card(row, childs=childs, childs_without=childs_without, tag_soup=soup, allDocs=allDocs, current_uuid=allUrls[url]['current'])
+        else:
+            print(f"{url} - не найден")
     
+    resp = requests.get("https://www.tltsu.ru/uscience")
+    soup = BeautifulSoup(resp.text, 'lxml')
+    
+    no_titles = ["главная", "контакты", "en"]
+    urls = list()
+    
+    nav = soup.find("div", attrs={"class": "top-nav-block"})        
+    nav = nav.find('ul')
+    for item in nav.find_all("div", attrs={"class": "item-text"}):
+        a_tag = item.find("a")
+        if any([title in a_tag.text.lower() for title in no_titles]):
+            continue
+        urls += find_urls(item)
+
+    for url in urls:
+        
+        if url in allUrls:
+            continue
+        
+        try:
+            resp = requests.get(url)
+            soup = BeautifulSoup(resp.text, 'lxml')
+        except:
+            errorUrls.append(url)
+            continue  
+
+        row, type = load_row(soup)
+
+        allUrls[url] = {
+            "current": str(uuid.uuid4()),
+            "parent": None,
+            "title": get_title(soup),
+            "type": type
+        }
+        
+        if allUrls[url]['title'] is not None:
+            allUrls[url]['slug'] = slugify(allUrls[url]['title'], separator="_")   
+
+        if row is not None and type is not None:
+            load_card(row, tag_soup=soup, allDocs=allDocs, current_uuid=allUrls[url]['current'], type=type)
+
+
     allDocs = list(set(allDocs))
     print(f"Кол-во доков: {len(allDocs)}")
     
-    # allUrls = list(set(allUrls))
     print(f"Кол-во ссылок: {len(allUrls)}")
     
     errorUrls = list(set(errorUrls))
