@@ -32,11 +32,12 @@ def find_urls(tag: bs4.element.Tag):
         if "mailto:" in href:
             continue
         
+        if any([s in href for s in skip_list]):
+            continue
+        
         if href.startswith(('http://', 'https://')):
             if "www.tltsu.ru" not in href or "tltsu.ru" not in href:
                 continue
-        elif any([s in href for s in skip_list]):
-            continue
         elif "uscience/services" in href:
             href_list = href.replace("https://", '')\
                             .replace("http://", '')\
@@ -88,17 +89,31 @@ def find_docs(tag: Optional[bs4.element.Tag] = None):
     return docs
 
 def save_card(tag: bs4.element.Tag, uuid: str):
+    if not os.path.exists(f"{configs.html_path}"):
+        os.makedirs(f"{configs.html_path}")
+    if not os.path.exists(f"{configs.html_path}/pages"):
+        os.makedirs(f"{configs.html_path}/pages")
     f = open(f"{configs.html_path}/pages/{uuid}.html", "w", encoding='utf8')
     f.write(str(tag))
     f.close()
 
-def get_url_childs(tag: bs4.element.Tag, names: List[str] = [], without: List[str] = []):
+def get_url_childs(tag: bs4.element.Tag, names: List[str] = [], without: List[str] = [], type = None):
     urls = list()
     
-    for item in tag.find_all("a", attrs = {"class": "list-group-item"}):
+    if type == StaticType.USCIENCE:
+        items = list()
+        for li in tag.find_all("li"):
+            if li.get('class') == "current":
+                continue
+            else:
+                items.append(li.find("a"))
+    else:
+        items = tag.find_all("a", attrs = {"class": "list-group-item"})
+    
+    for item in items:
         item: bs4.element.Tag = item
         
-        if len(without) != 0:
+        if without is not None and len(without) != 0:
             found = False
             for name in without:
                 if item.text in name:
@@ -106,7 +121,7 @@ def get_url_childs(tag: bs4.element.Tag, names: List[str] = [], without: List[st
             if found:
                 continue
         
-        if len(names) != 0:
+        if names is not None and len(names) != 0:
             found = False
             for name in names:
                 if item.text in name:
@@ -123,11 +138,13 @@ def get_url_childs(tag: bs4.element.Tag, names: List[str] = [], without: List[st
         if "mailto:" in href:
             continue
         
+        if any([s in href for s in skip_list]):
+            continue
+        
         if href.startswith(('http://', 'https://')):
             if "www.tltsu.ru" not in href or "tltsu.ru" not in href:
                 continue
-        elif any([s in href for s in skip_list]):
-            continue
+
         elif "uscience/services" in href:
             href_list = href.replace("https://", '')\
                             .replace("http://", '')\
@@ -140,7 +157,7 @@ def get_url_childs(tag: bs4.element.Tag, names: List[str] = [], without: List[st
                 int(href_list[0])
                 continue
             except:
-                pass
+                _href = f"https://www.tltsu.ru/{_href}"
         else:
             _href = _href.strip("/")
             _href = f"https://www.tltsu.ru/{_href}"
@@ -230,7 +247,7 @@ def load_card(tag: bs4.element.Tag, childs = None, childs_without = None, tag_so
         
         if row is not None:
             print(f"Загружаю ссылку {currentCountUrls}/{allCountUrls}.")
-            currentCountUrls, allCountUrls = load_card(row, allDocs=allDocs, currentCountUrls=currentCountUrls, allCountUrls=allCountUrls, current_uuid=allUrls[url]['current'], type=_type)
+            currentCountUrls, allCountUrls = load_card(row, allDocs=allDocs, tag_soup=soup, currentCountUrls=currentCountUrls, allCountUrls=allCountUrls, current_uuid=allUrls[url]['current'], type=_type)
         else:
             notFoundUrls.append(url)
             del allUrls[url]
@@ -242,7 +259,7 @@ def load_card(tag: bs4.element.Tag, childs = None, childs_without = None, tag_so
             
         sidebar = find_sidebar(tag_soup, type)
         if sidebar is not None:
-            urls = get_url_childs(sidebar, childs, childs_without)
+            urls = get_url_childs(sidebar, childs, childs_without, type)
             for url in urls:
                 if url in allUrls:
                     allUrls[url]["parent"] = current_uuid
@@ -267,7 +284,7 @@ def load_card(tag: bs4.element.Tag, childs = None, childs_without = None, tag_so
                 add_child(current_uuid, allUrls[url]['current'])
                 
                 if row is not None:
-                    currentCountUrls, allCountUrls = load_card(row, allDocs=allDocs, currentCountUrls=currentCountUrls, allCountUrls=allCountUrls, current_uuid=allUrls[url]['current'])
+                    currentCountUrls, allCountUrls = load_card(row, allDocs=allDocs, tag_soup=soup, currentCountUrls=currentCountUrls, allCountUrls=allCountUrls, current_uuid=allUrls[url]['current'])
                 else:
                     notFoundUrls.append(url)
                     del allUrls[url]
@@ -284,8 +301,12 @@ def get_title(soup: BeautifulSoup):
     return None
         
 def find_sidebar(soup: BeautifulSoup, type = None):
-    if type in [StaticType.USCIENCE]:
-        pass
+    if type == StaticType.USCIENCE:
+        nav = soup.find("div", attrs={"class": "sidebar-nav"})
+        if nav is not None:
+            ul = nav.find("ul")
+            if ul is not None:
+                return ul
     
     for t in soup.find_all("div", attrs = {"class": "container"}):
         for row in t.find_all("div", attrs = {"class": "row"}):
@@ -315,6 +336,15 @@ def find_uscience_row(soup: BeautifulSoup) -> Optional[bs4.element.Tag]:
         content = t.find("div", attrs = {"class": "content"})
         if content is not None:
             row = content.find("div", attrs = {"class": "row"})
+            if row is not None:
+                boxs = row.find_all("div", attrs={"class": "white-box"})
+                if len(boxs) > 0:
+                   return content, StaticType.USCIENCE_ROWS
+            showcases = content.find_all("ul", attrs={"class": "showcase"})
+            if len(showcases) > 0:
+                return content, StaticType.USCIENCE_SHOWCASES
+               
+     
         
     return None, None
 
@@ -375,6 +405,8 @@ if __name__ == "__main__":
         else:
             print(f"{url} - не найден")
     
+    print(f"НАЧИНАЮ ЗАГРУЖАТЬ НАУЧНЫЙ БЛОК")
+    
     resp = requests.get("https://www.tltsu.ru/uscience")
     soup = BeautifulSoup(resp.text, 'lxml')
     
@@ -388,7 +420,7 @@ if __name__ == "__main__":
         if any([title in a_tag.text.lower() for title in no_titles]):
             continue
         urls += find_urls(item)
-
+    
     for url in urls:
         
         if url in allUrls:

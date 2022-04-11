@@ -36,5 +36,7 @@ class Property:
     
 class StaticType:
     USCIENCE = "uscience"
+    USCIENCE_ROWS = "uscience_rows"
+    USCIENCE_SHOWCASES = "uscience_showcases"
     CONTAINER = "container"
     JUMBOTRON = "jumbotron"
