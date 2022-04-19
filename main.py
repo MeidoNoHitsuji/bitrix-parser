@@ -161,12 +161,19 @@ for name, obj in objs.items():
         session: Session = session
         objs = list()
         for product in data[name]["products"]:
+            for template in product['templates']:
+                if "this.Name" in template['value']:
+                    template['value'] = product['name']
+                elif "this.PreviewText" in template['value']:
+                    template['value'] = product['preview']
             o = obj(
                 id=product['id'],
                 name=product['name'],
                 slug=product['slug'],
                 preview=product['preview'],
+                description=product['description'],
                 created_at=datetime.strptime(product['created_at'], "%Y-%m-%d %H:%M:%S") if product['created_at'] is not None and len(product['created_at']) > 0 else datetime.now(), 
+                unpublished_at=datetime.strptime(product['unpublish_at'], "%Y-%m-%d %H:%M:%S") if product['unpublish_at'] is not None and product['unpublish_at'] != "" else None,
                 tags=session.query(Tag).where(Tag.id.in_(product['tags'])).all(),
                 templates=[
                     Template(key=template['id'], value=template['value'])

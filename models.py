@@ -145,6 +145,7 @@ class Activity(Base, DefaultFunctions):
     preview = Column(String, nullable=True)
     preview_image_id = Column(Integer, ForeignKey(Image.id, name='activities_preview_image_id_foreign'), nullable=True)
     created_at = Column(DateTime, nullable=False)
+    unpublished_at = Column(DateTime, nullable=True)
     tags = relationship("Tag", secondary=Table("tags_activities", Base.metadata,
         Column("tag_id", ForeignKey("tags.id", name='tag_activity_tag_id_foreign')),
         Column("activity_id", ForeignKey("activities.id", name='tag_activity_activity_id_foreign'))
@@ -173,6 +174,7 @@ class FAQ(Base, DefaultFunctions):
     preview = Column(String, nullable=True)
     preview_image_id = Column(Integer, ForeignKey(Image.id, name='faq_preview_image_id_foreign'), nullable=True)
     created_at = Column(DateTime, nullable=False)
+    unpublished_at = Column(DateTime, nullable=True)
     tags = relationship("Tag", secondary=Table("tags_faq", Base.metadata,
         Column("tag_id", ForeignKey("tags.id", name='tag_faq_tag_id_foreign')),
         Column("faq_id", ForeignKey("faq.id", name='tag_faq_faq_id_foreign'))
@@ -201,6 +203,7 @@ class Catalog(Base, DefaultFunctions):
     preview = Column(String, nullable=True)
     preview_image_id = Column(Integer, ForeignKey(Image.id, name='catalog_preview_image_id_foreign'), nullable=True)
     created_at = Column(DateTime, nullable=False)
+    unpublished_at = Column(DateTime, nullable=True)
     tags = relationship("Tag", secondary=Table("tags_catalog", Base.metadata,
         Column("tag_id", ForeignKey("tags.id", name='tag_catalog_tag_id_foreign')),
         Column("catalog_id", ForeignKey("catalog.id", name='tag_catalog_catalog_id_foreign'))
@@ -229,6 +232,7 @@ class Laboratory(Base, DefaultFunctions):
     preview = Column(String, nullable=True)
     preview_image_id = Column(Integer, ForeignKey(Image.id, name='laboratories_preview_image_id_foreign'), nullable=True)
     created_at = Column(DateTime, nullable=False)
+    unpublished_at = Column(DateTime, nullable=True)
     tags = relationship("Tag", secondary=Table("tags_laboratories", Base.metadata,
         Column("tag_id", ForeignKey("tags.id", name='tag_laboratory_tag_id_foreign')),
         Column("laboratory_id", ForeignKey("laboratories.id", name='tag_laboratory_laboratory_id_foreign'))
@@ -257,6 +261,7 @@ class LibraryNew(Base, DefaultFunctions):
     preview = Column(String, nullable=True)
     preview_image_id = Column(Integer, ForeignKey(Image.id, name='library_news_preview_image_id_foreign'), nullable=True)
     created_at = Column(DateTime, nullable=False)
+    unpublished_at = Column(DateTime, nullable=True)
     tags = relationship("Tag", secondary=Table("tags_library_news", Base.metadata,
         Column("tag_id", ForeignKey("tags.id", name='tag_library_new_tag_id_foreign')),
         Column("library_new_id", ForeignKey("library_news.id", name='tag_library_new_library_new_id_foreign'))
@@ -285,6 +290,7 @@ class ProfkomNew(Base, DefaultFunctions):
     preview = Column(String, nullable=True)
     preview_image_id = Column(Integer, ForeignKey(Image.id, name='profkom_news_preview_image_id_foreign'), nullable=True)
     created_at = Column(DateTime, nullable=False)
+    unpublished_at = Column(DateTime, nullable=True)
     tags = relationship("Tag", secondary=Table("tags_profkom_news", Base.metadata,
         Column("tag_id", ForeignKey("tags.id", name='tag_profkom_new_tag_id_foreign')),
         Column("profkom_new_id", ForeignKey("profkom_news.id", name='tag_profkom_new_profkom_new_id_foreign'))
@@ -313,6 +319,7 @@ class New(Base, DefaultFunctions):
     preview = Column(String, nullable=True)
     preview_image_id = Column(Integer, ForeignKey(Image.id, name='news_preview_image_id_foreign'), nullable=True)
     created_at = Column(DateTime, nullable=False)
+    unpublished_at = Column(DateTime, nullable=True)
     tags = relationship("Tag", secondary=Table("tags_news", Base.metadata,
         Column("tag_id", ForeignKey("tags.id", name='tag_new_tag_id_foreign')),
         Column("new_id", ForeignKey("news.id", name='tag_new_new_id_foreign'))
@@ -341,6 +348,7 @@ class Equipment(Base, DefaultFunctions):
     preview = Column(String, nullable=True)
     preview_image_id = Column(Integer, ForeignKey(Image.id, name='equipments_preview_image_id_foreign'), nullable=True)
     created_at = Column(DateTime, nullable=False)
+    unpublished_at = Column(DateTime, nullable=True)
     tags = relationship("Tag", secondary=Table("tags_equipments", Base.metadata,
         Column("tag_id", ForeignKey("tags.id", name='tag_equipment_tag_id_foreign')),
         Column("equipment_id", ForeignKey("equipments.id", name='tag_equipment_equipment_id_foreign'))
@@ -369,6 +377,7 @@ class Patent(Base, DefaultFunctions):
     preview = Column(String, nullable=True)
     preview_image_id = Column(Integer, ForeignKey(Image.id, name='patents_preview_image_id_foreign'), nullable=True)
     created_at = Column(DateTime, nullable=False)
+    unpublished_at = Column(DateTime, nullable=True)
     tags = relationship("Tag", secondary=Table("tags_patents", Base.metadata,
         Column("tag_id", ForeignKey("tags.id", name='tag_patent_tag_id_foreign')),
         Column("patent_id", ForeignKey("patents.id", name='tag_patent_patent_id_foreign'))
@@ -397,6 +406,7 @@ class Teacher(Base, DefaultFunctions):
     preview = Column(String, nullable=True)
     preview_image_id = Column(Integer, ForeignKey(Image.id, name='teachers_preview_image_id_foreign'), nullable=True)
     created_at = Column(DateTime, nullable=False)
+    unpublished_at = Column(DateTime, nullable=True)
     tags = relationship("Tag", secondary=Table("tags_teachers", Base.metadata,
         Column("tag_id", ForeignKey("tags.id", name='tag_teacher_tag_id_foreign')),
         Column("teacher_id", ForeignKey("teachers.id", name='tag_teacher_teacher_id_foreign'))
@@ -425,6 +435,7 @@ class ComputerProgram(Base, DefaultFunctions):
     preview = Column(String, nullable=True)
     preview_image_id = Column(Integer, ForeignKey(Image.id, name='computer_programs_preview_image_id_foreign'), nullable=True)
     created_at = Column(DateTime, nullable=False)
+    unpublished_at = Column(DateTime, nullable=True)
     tags = relationship("Tag", secondary=Table("tags_computer_programs", Base.metadata,
         Column("tag_id", ForeignKey("tags.id", name='tag_computer_program_tag_id_foreign')),
         Column("computer_program_id", ForeignKey("computer_programs.id", name='tag_computer_program_computer_program_id_foreign'))
@@ -453,6 +464,7 @@ class Certificates(Base, DefaultFunctions):
     preview = Column(String, nullable=True)
     preview_image_id = Column(Integer, ForeignKey(Image.id, name='certificates_preview_image_id_foreign'), nullable=True)
     created_at = Column(DateTime, nullable=False)
+    unpublished_at = Column(DateTime, nullable=True)
     tags = relationship("Tag", secondary=Table("tags_certificates", Base.metadata,
         Column("tag_id", ForeignKey("tags.id", name='tag_certificate_tag_id_foreign')),
         Column("certificate_id", ForeignKey("certificates.id", name='tag_certificate_certificate_id_foreign'))
@@ -481,6 +493,7 @@ class Phonebook(Base, DefaultFunctions):
     preview = Column(String, nullable=True)
     preview_image_id = Column(Integer, ForeignKey(Image.id, name='phonebook_preview_image_id_foreign'), nullable=True)
     created_at = Column(DateTime, nullable=False)
+    unpublished_at = Column(DateTime, nullable=True)
     tags = relationship("Tag", secondary=Table("tags_phonebook", Base.metadata,
         Column("tag_id", ForeignKey("tags.id", name='tag_phonebook_tag_id_foreign')),
         Column("phonebook_id", ForeignKey("phonebook.id", name='tag_phonebook_phonebook_id_foreign'))
@@ -509,6 +522,7 @@ class Trademarks(Base, DefaultFunctions):
     preview = Column(String, nullable=True)
     preview_image_id = Column(Integer, ForeignKey(Image.id, name='trademarks_preview_image_id_foreign'), nullable=True)
     created_at = Column(DateTime, nullable=False)
+    unpublished_at = Column(DateTime, nullable=True)
     tags = relationship("Tag", secondary=Table("tags_trademarks", Base.metadata,
         Column("tag_id", ForeignKey("tags.id", name='tag_trademark_tag_id_foreign')),
         Column("trademark_id", ForeignKey("trademarks.id", name='tag_trademark_trademark_id_foreign'))
@@ -537,6 +551,7 @@ class Services(Base, DefaultFunctions):
     preview = Column(String, nullable=True)
     preview_image_id = Column(Integer, ForeignKey(Image.id, name='services_preview_image_id_foreign'), nullable=True)
     created_at = Column(DateTime, nullable=False)
+    unpublished_at = Column(DateTime, nullable=True)
     tags = relationship("Tag", secondary=Table("tags_services", Base.metadata,
         Column("tag_id", ForeignKey("tags.id", name='tag_service_tag_id_foreign')),
         Column("service_id", ForeignKey("services.id", name='tag_service_service_id_foreign'))
