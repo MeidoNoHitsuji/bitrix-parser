@@ -12,7 +12,7 @@ from sqlalchemy.orm import relationship, sessionmaker, query
 from sqlalchemy.orm.session import Session
 from typing import List, Optional, Type, TypeVar, Union
 
-engine = create_engine('sqlite:///database.db', echo=False)
+engine = create_engine('sqlite:///database.sqlite', echo=False)
 SessionObj = sessionmaker(engine)
 Base = declarative_base()
 

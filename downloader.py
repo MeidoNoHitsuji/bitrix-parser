@@ -9,6 +9,8 @@ f = open(path, "r", encoding="utf_8")
 data = json.loads(f.read())
 f.close()
 
+data = list(filter(lambda f: '.php' not in f, data))
+
 i = 1
 for d in data:
     d: str = d.strip("/")
@@ -17,7 +19,14 @@ for d in data:
     if not os.path.exists(pat_dir):
         os.makedirs(pat_dir)
     response = requests.get(url_path + d)
-    with open(f"{save_path}/{d}", "wb") as f:
-        f.write(response.content)
-    print(f"Сохранён файл: {i}")
+    if response.status_code != 200:
+        response = requests.get("https://tltsu.ru/" + d)
+        
+    if response.status_code != 200:    
+        print(f"Ошибка: {url_path + d}")
+    else:
+        with open(f"{save_path}/{d}", "wb") as f:
+            f.write(response.content)
+        print(f"Сохранён файл: {i}/{len(data)}")
+        
     i += 1

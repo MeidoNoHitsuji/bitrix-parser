@@ -170,7 +170,8 @@ def get_document(data: Optional[str]) -> Optional[str]:
 
 def get_documents(data: str) -> List:
     if data is not None:
-        return re.findall(r"\/iblock\/[a-zA-Zа-яА-Я0-9 \/]+.[a-zA-Z]{2,4}", data)
+        docs =  re.findall(r"\/iblock\/[a-zA-Zа-яА-Я0-9_\- \/]+\.[a-zA-Z]{2,4}|\/medialibrary\/[a-zA-Zа-яА-Я0-9_\- \/]+\.[a-zA-Z]{2,4}|\/uscience\/[a-zA-Zа-яА-Я0-9_\- \/]+\.[a-zA-Z]{2,4}", data)
+        return list(filter(lambda d: '.php' not in d, docs))
     else:
         return []
 
@@ -185,6 +186,15 @@ def get_documents_from_dict(data: dict) -> List:
             documents += get_documents_from_dict(v)
 
     return documents
+
+def fix_documents_from_dict(data: dict):    
+    for k, v in copy(data).items():
+        if isinstance(v, str):
+            data[k] = v.replace('"/uscience', '"/upload/uscience').replace('tltsu.ru/uscience', 'tltsu.ru/upload/uscience')
+        elif isinstance(v, dict):
+            data[k] = fix_documents_from_dict(v)
+
+    return data
 
 def list_to_dict(l: List) -> Dict:
     return dict({

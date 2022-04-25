@@ -56,6 +56,7 @@ for name, content in contents.items():
         i += 1
         
         all_documents += tools.get_documents_from_dict(product)
+        product = tools.fix_documents_from_dict(product)
         all_tags += product['tags']
         
         data[name]['templates'] += [t['id'] for t in product['templates']]

@@ -464,22 +464,22 @@ if __name__ == "__main__":
     print(f"Кол-во пропущенных ссылок с параметром: {len(sharpUrls)}")
             
     f = open(f"{configs.html_path}/docs.json", "w", encoding='utf8')
-    f.write(str(allDocs))
+    f.write(json.dumps(allDocs, ensure_ascii=False))
     f.close()
 
     f = open(f"{configs.html_path}/urls.json", "w", encoding='utf8')
-    f.write(str(allUrls))
+    f.write(json.dumps(allUrls, ensure_ascii=False))
     f.close()
     
     f = open(f"{configs.html_path}/error_urls.json", "w", encoding='utf8')
-    f.write(str(errorUrls))
+    f.write(json.dumps(errorUrls, ensure_ascii=False))
     f.close()
     
     f = open(f"{configs.html_path}/not_found_urls.json", "w", encoding='utf8')
-    f.write(str(notFoundUrls))
+    f.write(json.dumps(notFoundUrls, ensure_ascii=False))
     f.close()
     
     f = open(f"{configs.html_path}/sharp_urls.json", "w", encoding='utf8')
-    f.write(str(sharpUrls))
+    f.write(json.dumps(sharpUrls, ensure_ascii=False))
     f.close()
     
