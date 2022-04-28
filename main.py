@@ -169,6 +169,7 @@ for name, obj in objs.items():
                     template['value'] = product['preview']
             o = obj(
                 id=product['id'],
+                old_id=product.get('old_id'),
                 name=product['name'],
                 slug=product['slug'],
                 preview=product['preview'],
