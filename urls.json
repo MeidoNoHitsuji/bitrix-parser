@@ -50,6 +50,11 @@
     "type": "container",
     "parameters": ["files"]
 }, {
+    "url": "https://www.tltsu.ru/upravlenie/educational-methodical-management/",
+    "title": "Учебно-методическое управление (УМУ)",
+    "type": "container",
+    "parameters": ["childs"]
+}, {
     "url": "https://www.tltsu.ru/sveden/paid_edu/",
     "title": "Платные образовательные услуги ТГУ",
     "type": "container",
@@ -67,6 +72,11 @@
 }, {
     "url": "https://www.tltsu.ru/sveden/common/",
     "title": "Тольяттинский государственный университет: основные сведения",
+    "type": "container",
+    "parameters": ["childs"]
+}, {
+    "url": "https://www.tltsu.ru/sveden/",
+    "title": "Тольяттинский государственный университет: сведения об образовательной организации",
     "type": "container",
     "parameters": ["childs"]
 }, {

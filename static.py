@@ -53,10 +53,10 @@ def find_urls(tag: bs4.element.Tag):
             except:
                 _href = f"https://www.tltsu.ru/{_href}"
         else:
-            _href = _href.strip("/")
             _href = f"https://www.tltsu.ru/{_href}"
             
         if not href.lower().endswith(doc_mask):
+            _href = _href.strip("/").rstrip('/index.php')
             urls.append(_href)
             
     return urls

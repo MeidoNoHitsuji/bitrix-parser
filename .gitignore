@@ -4,4 +4,5 @@ database.sqlite
 files
 json
 html
+_html
 *.bat
