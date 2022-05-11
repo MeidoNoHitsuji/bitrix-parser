@@ -51,8 +51,10 @@ def find_urls(tag: bs4.element.Tag):
                 int(href_list[0])
                 continue
             except:
+                _href = _href.strip("/").rstrip('/index.php')
                 _href = f"https://www.tltsu.ru/{_href}"
         else:
+            _href = _href.strip("/").rstrip('/index.php')
             _href = f"https://www.tltsu.ru/{_href}"
             
         if not href.lower().endswith(doc_mask):
@@ -80,10 +82,11 @@ def find_docs(tag: Optional[bs4.element.Tag] = None):
         elif any([s in href for s in skip_list]):
             continue
         else:
-            _href = _href.strip("/")
+            _href = _href.strip("/").rstrip('/index.php')
             _href = f"https://www.tltsu.ru/{_href}"
             
         if href.lower().endswith(doc_mask):
+            _href = _href.strip("/").rstrip('/index.php')
             docs.append(_href)
             
     return docs
@@ -157,12 +160,14 @@ def get_url_childs(tag: bs4.element.Tag, names: List[str] = [], without: List[st
                 int(href_list[0])
                 continue
             except:
+                _href = _href.strip("/").rstrip('/index.php')
                 _href = f"https://www.tltsu.ru/{_href}"
         else:
-            _href = _href.strip("/")
+            _href = _href.strip("/").rstrip('/index.php')
             _href = f"https://www.tltsu.ru/{_href}"
             
         if not href.lower().endswith(doc_mask):
+            _href = _href.strip("/")
             urls.append(_href)
             
     return urls
@@ -171,6 +176,8 @@ def load_row(tag: Union[BeautifulSoup, bs4.element.Tag], type: str = None):
     if type is not None:
         if type == StaticType.CONTAINER:
             row = find_container_row(tag)
+        elif type == StaticType.ONLY_CONTAINER:
+            row = find_only_container_row(tag)
         elif type == StaticType.JUMBOTRON:
             row = find_jumbotron_row(tag)
         elif type == StaticType.USCIENCE:
@@ -326,6 +333,12 @@ def find_container_row(soup: BeautifulSoup) -> Optional[bs4.element.Tag]:
                     return _col   
     return None
 
+def find_only_container_row(soup: BeautifulSoup) -> Optional[bs4.element.Tag]:
+    for t in soup.find_all("div", attrs = {"class": "container"}):
+        if len(t.find_all("div", attrs = {"class": "card"})) != 0:
+            return t 
+    return None
+
 def find_uscience_row(soup: BeautifulSoup) -> Optional[bs4.element.Tag]:
     for t in soup.find_all("div", attrs = {"class": "white-box"}):
         content = t.find("div", attrs = {"class": "content"})
@@ -369,7 +382,7 @@ if __name__ == "__main__":
     urls: List[dict] = json.loads(f.read())
 
     for data in urls:            
-        allUrls[data['url']] = {
+        allUrls[data['url'].strip("/")] = {
             "current": str(uuid.uuid4()),
             "parent": None,
             "title": data['title'],
@@ -378,7 +391,7 @@ if __name__ == "__main__":
         }
 
     for data in urls:
-        url: str = data['url']
+        url: str = data['url'].strip("/")
         type: str = data['type']
         parameters: Optional[List[str]] = data.get('parameters')
         

@@ -39,4 +39,5 @@ class StaticType:
     USCIENCE_ROWS = "uscience_rows"
     USCIENCE_SHOWCASES = "uscience_showcases"
     CONTAINER = "container"
+    ONLY_CONTAINER = "only_container"
     JUMBOTRON = "jumbotron"
