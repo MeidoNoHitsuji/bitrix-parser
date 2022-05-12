@@ -27,6 +27,7 @@ def find_urls(tag: bs4.element.Tag):
         if href is None:
             continue
         _href = copy(href)
+        _href = _href.strip("/")
         href = href.lower()
         
         if "mailto:" in href:
@@ -71,6 +72,7 @@ def find_docs(tag: Optional[bs4.element.Tag] = None):
         if href is None:
             continue
         _href = copy(href)
+        _href = _href.strip("/")
         href = href.lower()
         
         if "mailto:" in href:
@@ -136,6 +138,7 @@ def get_url_childs(tag: bs4.element.Tag, names: List[str] = [], without: List[st
         if href is None:
             continue
         _href = copy(href)
+        _href = _href.strip("/")
         href = href.lower()
         
         if "mailto:" in href:
