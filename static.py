@@ -52,14 +52,14 @@ def find_urls(tag: bs4.element.Tag):
                 int(href_list[0])
                 continue
             except:
-                _href = _href.strip("/").rstrip('/index.php')
+                _href = _href.strip("/").replace('/index.php', '')
                 _href = f"https://www.tltsu.ru/{_href}"
         else:
-            _href = _href.strip("/").rstrip('/index.php')
+            _href = _href.strip("/").replace('/index.php', '')
             _href = f"https://www.tltsu.ru/{_href}"
             
         if not href.lower().endswith(doc_mask):
-            _href = _href.strip("/").rstrip('/index.php')
+            _href = _href.strip("/").replace('/index.php', '')
             urls.append(_href)
             
     return urls
@@ -84,11 +84,11 @@ def find_docs(tag: Optional[bs4.element.Tag] = None):
         elif any([s in href for s in skip_list]):
             continue
         else:
-            _href = _href.strip("/").rstrip('/index.php')
+            _href = _href.strip("/").replace('/index.php', '')
             _href = f"https://www.tltsu.ru/{_href}"
             
         if href.lower().endswith(doc_mask):
-            _href = _href.strip("/").rstrip('/index.php')
+            _href = _href.strip("/").replace('/index.php', '')
             docs.append(_href)
             
     return docs
@@ -163,10 +163,10 @@ def get_url_childs(tag: bs4.element.Tag, names: List[str] = [], without: List[st
                 int(href_list[0])
                 continue
             except:
-                _href = _href.strip("/").rstrip('/index.php')
+                _href = _href.strip("/").replace('/index.php', '')
                 _href = f"https://www.tltsu.ru/{_href}"
         else:
-            _href = _href.strip("/").rstrip('/index.php')
+            _href = _href.strip("/").replace('/index.php', '')
             _href = f"https://www.tltsu.ru/{_href}"
             
         if not href.lower().endswith(doc_mask):
