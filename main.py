@@ -1,3 +1,4 @@
+import json
 import os
 import xml.etree.ElementTree as ET
 from typing import Dict, Optional, Union, List
@@ -69,6 +70,11 @@ for name, content in contents.items():
 tools.save_json(data)
 
 all_documents = list(set(all_documents))
+
+f = open(f"{configs.json_path}/documents.json", "w", encoding='utf8')
+f.write(json.dumps(all_documents, ensure_ascii=False))
+f.close()
+
 all_documents = tools.list_to_dict(all_documents)
 
 all_tags = [tag for tag in list(set(all_tags)) if len(tag) > 0]

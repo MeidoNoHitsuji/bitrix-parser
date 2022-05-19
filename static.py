@@ -19,6 +19,8 @@ skip_list = ["/news-archive/", "/about_the_university/news", "upravlenie/educati
 
 doc_mask = (".pdf", ".docs", ".docx", ".doc", ".pptx", ".xlsx", ".rar", ".zip", ".png", ".jpeg", ".jpg", ".xls", ".rtf", ".sig")
 
+reg = r"^(http|https):\/\/([a-z]*\.)*tltsu\.ru/"
+
 def find_urls(tag: bs4.element.Tag):
     urls = list()
     for item in tag.find_all("a"):
@@ -64,32 +66,48 @@ def find_urls(tag: bs4.element.Tag):
             
     return urls
 
-def find_docs(tag: Optional[bs4.element.Tag] = None):
+def _find_docs(item: Optional[bs4.element.Tag] = None, url = None):
+    href = item.attrs.get('href')
+    if href is None:
+        href = item.attrs.get('src')
+    if href is None:
+        return None
+    _href = copy(href)
+    _href = _href.rstrip("/")
+    href = href.lower()
+    
+    if "mailto:" in href:
+        return None
+    
+    start_url = re.match(reg, href)
+    
+    if href.startswith(('http://', 'https://')):
+        if start_url is None:
+            return None
+    elif any([s in href for s in skip_list]):
+        return None
+    elif not _href.startswith('/') and url is not None:
+        _href = f"{url.rstrip('/')}/{_href}"
+    else:
+        _href = _href.strip("/")
+        _href = f"https://www.tltsu.ru/{_href}"
+        
+    if href.lower().endswith(doc_mask):
+        _href = _href.strip("/")
+        return _href
+    
+    return None
+
+def find_docs(tag: Optional[bs4.element.Tag] = None, url = None):
     docs = list()
     for item in tag.find_all("a"):
-        item: bs4.element.Tag = item
-        href = item.attrs.get('href')
-        if href is None:
-            continue
-        _href = copy(href)
-        _href = _href.strip("/")
-        href = href.lower()
-        
-        if "mailto:" in href:
-            continue
-        
-        if href.startswith(('http://', 'https://')):
-            if "www.tltsu.ru" not in href or "tltsu.ru" not in href:
-                continue
-        elif any([s in href for s in skip_list]):
-            continue
-        else:
-            _href = _href.strip("/").replace('/index.php', '')
-            _href = f"https://www.tltsu.ru/{_href}"
-            
-        if href.lower().endswith(doc_mask):
-            _href = _href.strip("/").replace('/index.php', '')
-            docs.append(_href)
+        href = _find_docs(item, url)
+        if href is not None:
+            docs.append(href)
+    for item in tag.find_all("img"):
+        href = _find_docs(item, url)
+        if href is not None:
+            docs.append(href)
             
     return docs
 
@@ -207,10 +225,10 @@ def add_child(parent: str, child: str):
                 allUrls[u]["childs"] = list()
             allUrls[u]["childs"].append(child)
 
-def load_card(tag: bs4.element.Tag, childs = None, childs_without = None, tag_soup: Optional[BeautifulSoup] = None, allDocs: List[str] = [], allCountUrls = 0, currentCountUrls = 0, current_uuid = None, type = None):
+def load_card(tag: bs4.element.Tag, childs = None, childs_without = None, tag_soup: Optional[BeautifulSoup] = None, allDocs: List[str] = [], allCountUrls = 0, currentCountUrls = 0, current_uuid = None, type = None, url = None):
     save_card(tag, current_uuid)
     
-    docs: List[str] = find_docs(tag)
+    docs: List[str] = find_docs(tag, url)
     print(f"Найдено {len(docs)} документов")
     allDocs += docs
     
@@ -257,7 +275,7 @@ def load_card(tag: bs4.element.Tag, childs = None, childs_without = None, tag_so
         
         if row is not None:
             print(f"Загружаю ссылку {currentCountUrls}/{allCountUrls}.")
-            currentCountUrls, allCountUrls = load_card(row, allDocs=allDocs, tag_soup=soup, currentCountUrls=currentCountUrls, allCountUrls=allCountUrls, current_uuid=allUrls[url]['current'], type=_type)
+            currentCountUrls, allCountUrls = load_card(row, allDocs=allDocs, tag_soup=soup, currentCountUrls=currentCountUrls, allCountUrls=allCountUrls, current_uuid=allUrls[url]['current'], type=_type, url=url)
         else:
             notFoundUrls.append(url)
             del allUrls[url]
@@ -294,7 +312,7 @@ def load_card(tag: bs4.element.Tag, childs = None, childs_without = None, tag_so
                 add_child(current_uuid, allUrls[url]['current'])
                 
                 if row is not None:
-                    currentCountUrls, allCountUrls = load_card(row, allDocs=allDocs, tag_soup=soup, currentCountUrls=currentCountUrls, allCountUrls=allCountUrls, current_uuid=allUrls[url]['current'])
+                    currentCountUrls, allCountUrls = load_card(row, allDocs=allDocs, tag_soup=soup, currentCountUrls=currentCountUrls, allCountUrls=allCountUrls, current_uuid=allUrls[url]['current'], url=url)
                 else:
                     notFoundUrls.append(url)
                     del allUrls[url]
@@ -417,7 +435,7 @@ if __name__ == "__main__":
 
         if row is not None and type is not None:
             print(f"{url} - Начало загрузки")
-            load_card(row, childs=childs, childs_without=childs_without, tag_soup=soup, allDocs=allDocs, current_uuid=allUrls[url]['current'])
+            load_card(row, childs=childs, childs_without=childs_without, tag_soup=soup, allDocs=allDocs, current_uuid=allUrls[url]['current'], url=url)
         else:
             print(f"{url} - не найден")
     
@@ -462,7 +480,7 @@ if __name__ == "__main__":
             allUrls[url]['slug'] = slugify(allUrls[url]['title'], separator="_")   
 
         if row is not None and type is not None:
-            load_card(row, tag_soup=soup, allDocs=allDocs, current_uuid=allUrls[url]['current'], type=type)
+            load_card(row, tag_soup=soup, allDocs=allDocs, current_uuid=allUrls[url]['current'], type=type, url=url)
 
 
     allDocs = list(set(allDocs))
