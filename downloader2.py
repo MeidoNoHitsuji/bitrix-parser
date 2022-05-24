@@ -28,10 +28,16 @@ for d in data:
     value: str = value.strip("/")
     _data[d] = value.split("/")
 
-_errors = []
+_errors = {
+    "easy": [],
+    "critical": []
+}
 
-i = 1
+i = 0
 for k, v in _data.items():
+    i += 1
+    if os.path.exists(f"{save_path}/{'/'.join(v)}"):
+        continue
     pat_dir = f"{save_path}/{'/'.join(v[0:len(v) - 1])}"
     if not os.path.exists(pat_dir):
         os.makedirs(pat_dir)
@@ -39,7 +45,7 @@ for k, v in _data.items():
         
     if response.status_code != 200:    
         print(f"Ошибка: {k}")
-        _errors.append(k)
+        _errors["easy"].append(k)
     else:
         try:
             with open(f"{save_path}/{'/'.join(v)}", "wb") as f:
@@ -47,11 +53,10 @@ for k, v in _data.items():
             print(f"Сохранён файл: {i}/{len(data)}")
         except:
             print(f"Критическая ошибка: {k}")
-            _errors.append(k)
-        
-    i += 1
+            _errors["critical"].append(k)
 
-print(f"Ошибок: {len(_errors)}")
+print(f"Обычных ошибок: {len(_errors['easy'])}")
+print(f"Критических ошибок: {len(_errors['critical'])}")
 
 f = open(f"{save_path}/errors.json", "w", encoding='utf8')
 f.write(json.dumps(_errors, ensure_ascii=False))

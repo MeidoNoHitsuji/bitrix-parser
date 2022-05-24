@@ -11,9 +11,9 @@ import bs4
 from bs4 import BeautifulSoup
 from slugify import slugify
 
-skip_list = ["/news-archive/", "/about_the_university/news", "upravlenie/educational-methodical-management/schedule",
-    "media-tsu/videogallery/", "?pagen_1=", "uscience/certification", "uscience/equipment"
-    "/uscience/scientific-library/news", "/uscience/scientific-library/question-ans", "uscience/lab",
+skip_list = ["news-archive", "about_the_university/news", "upravlenie/educational-methodical-management/schedule",
+    "media-tsu/videogallery", "?pagen_1=", "uscience/certification", "uscience/equipment",
+    "uscience/scientific-library/news", "uscience/scientific-library/question-ans", "uscience/lab",
     "uscience/scientific-innovative-activity/patents", "uscience/scientific-innovative-activity/computer-programs",
     "uscience/scientific-innovative-activity/trademarks"]
 
